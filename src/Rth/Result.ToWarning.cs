@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rth
 {
@@ -23,6 +25,12 @@ namespace Rth
                 , TInput input
                 , IEnumerable<TMessage> messages)
             {
+                if(!messages.Any())
+                {
+                    throw new ArgumentException(
+                        $"[{nameof(messages)}] cannot be empty when creating WARNING result.");
+                }
+                
                 return new Result<TInput, TOutput, TMessage>(
                     input
                     , output
@@ -36,6 +44,12 @@ namespace Rth
                 , TInput input
                 , params TMessage[] messages)
             {
+                if(!messages.Any())
+                {
+                    throw new ArgumentException(
+                        $"[{nameof(messages)}] cannot be empty when creating WARNING result.");
+                }
+
                 return new Result<TInput, TOutput, TMessage>(
                     input
                     , output
