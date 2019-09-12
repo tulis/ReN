@@ -6,7 +6,7 @@ namespace Rth
 {
     public static class ResultToWarning
     {
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input
@@ -19,7 +19,7 @@ namespace Rth
                     , Status.Warning);
             }
 
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input
@@ -30,7 +30,7 @@ namespace Rth
                     throw new ArgumentException(
                         $"[{nameof(messages)}] cannot be empty when creating WARNING result.");
                 }
-                
+
                 return new Result<TInput, TOutput, TMessage>(
                     input
                     , output
@@ -38,7 +38,7 @@ namespace Rth
                     , Status.Warning);
             }
 
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input

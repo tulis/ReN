@@ -2,7 +2,8 @@
 
 namespace Rth
 {
-    public class Result<TInput, TOutput, TMessage>
+    public class Result<TInput, TOutput, TMessage> 
+        : IResult<TInput, TOutput, TMessage>
     {
         public Result(TInput input
             , TOutput output
@@ -19,11 +20,6 @@ namespace Rth
         public TInput Input {get;}
         public TOutput Output {get;}
         public IEnumerable<TMessage> Messages {get;}
-
-
         public Status Status {get;}
-        public bool IsError => this.Status == Status.Error;
-        public bool IsSuccess => this.Status == Status.Success;
-        public bool IsWarning => this.Status == Status.Warning;
     }
 }

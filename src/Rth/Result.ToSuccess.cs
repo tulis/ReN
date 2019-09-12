@@ -5,7 +5,7 @@ namespace Rth
 {
     public static class ResultToSuccess
     {
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input)
@@ -17,7 +17,7 @@ namespace Rth
                     , Status.Success);
             }
 
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input
@@ -30,7 +30,7 @@ namespace Rth
                     , Status.Success);
             }
 
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input
@@ -43,7 +43,7 @@ namespace Rth
                     , Status.Success);
             }
 
-        public static Result<TInput, TOutput, TMessage>
+        public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
                 , TInput input
