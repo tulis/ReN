@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5BEB3508-EC9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rth", "src\Rth\Rth.csproj", "{8CD07BC8-7035-438A-BE83-C686B8F0BE97}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{72EF7BC3-034A-4D50-BBEB-15A6B1C7C2F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72EF7BC3-034A-4D50-BBEB-15A6B1C7C2F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72EF7BC3-034A-4D50-BBEB-15A6B1C7C2F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Debug|x64.ActiveCfg = Debug|Any CPU
