@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5BEB3508-EC9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rth", "src\Rth\Rth.csproj", "{8CD07BC8-7035-438A-BE83-C686B8F0BE97}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{289DE1E2-5CD7-4500-A427-D20952BEE725}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,16 @@ Global
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Release|x64.Build.0 = Release|Any CPU
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Release|x86.ActiveCfg = Release|Any CPU
 		{8CD07BC8-7035-438A-BE83-C686B8F0BE97}.Release|x86.Build.0 = Release|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Debug|x64.Build.0 = Debug|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Debug|x86.Build.0 = Debug|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Release|x64.ActiveCfg = Release|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Release|x64.Build.0 = Release|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Release|x86.ActiveCfg = Release|Any CPU
+		{289DE1E2-5CD7-4500-A427-D20952BEE725}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
