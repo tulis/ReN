@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Rth
 {
     public static class ResultToError
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToError<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -19,6 +21,7 @@ namespace Rth
                     , Status.Error);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToError<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -38,6 +41,7 @@ namespace Rth
                     , Status.Error);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToError<TInput, TOutput, TMessage>(
                 this TOutput output

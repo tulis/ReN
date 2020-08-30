@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Rth
 {
     public static class ResultToSuccess
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -17,6 +19,7 @@ namespace Rth
                     , Status.Success);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -30,6 +33,7 @@ namespace Rth
                     , Status.Success);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -43,6 +47,7 @@ namespace Rth
                     , Status.Success);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToSuccess<TInput, TOutput, TMessage>(
                 this TOutput output

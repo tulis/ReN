@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Rth
 {
     public static class ResultToWarning
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -19,6 +21,7 @@ namespace Rth
                     , Status.Warning);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
@@ -38,6 +41,7 @@ namespace Rth
                     , Status.Warning);
             }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IResult<TInput, TOutput, TMessage>
             ToWarning<TInput, TOutput, TMessage>(
                 this TOutput output
