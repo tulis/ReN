@@ -18,7 +18,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
     , On = new[] { GitHubActionsTrigger.Push }
-    , InvokedTargets = new[] { nameof(Compile)})]
+    , InvokedTargets = new[] { nameof(Test)})]
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 class Build : NukeBuild
@@ -71,4 +71,15 @@ class Build : NukeBuild
                 .EnableNoRestore());
         });
 
+    Target Test => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            DotNetTest(setting => setting
+                .SetProjectFile(Solution)
+                .SetConfiguration(Configuration)
+                .EnableNoRestore()
+                .EnableNoBuild()
+            );
+        });
 }
