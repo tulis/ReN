@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using Nuke.Common;
+using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.CI.GitHubActions.Configuration;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -9,8 +11,12 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.ReportGenerator;
+using Nuke.Common.Tools.SonarScanner;
 using Nuke.Common.Utilities.Collections;
+using Octokit;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -19,7 +25,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
     , On = new[] { GitHubActionsTrigger.Push }
-    , InvokedTargets = new[] { nameof(Test)})]
+    , InvokedTargets = new[] { nameof(CodecovUpload)}
+    , ImportSecrets = new[] { nameof(CODECOV)})]
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 class Build : NukeBuild
@@ -30,7 +37,7 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main () => Execute<Build>(build => build.Compile);
+    public static int Main () => Execute<Build>(build => build.Test);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -42,6 +49,8 @@ class Build : NukeBuild
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath OutputDirectory => RootDirectory / "output";
+
+    [Parameter] readonly string CODECOV;
 
     Target Clean => _ => _
         .Before(Restore)
@@ -55,6 +64,11 @@ class Build : NukeBuild
     Target Restore => _ => _
         .Executes(() =>
         {
+            //ProcessTasks.StartProcess(toolPath: "chmod"
+            //            , arguments: "777 codecov-uploader"
+            //            , workingDirectory: RootDirectory)
+            //        .Output.ForEach(output => Console.WriteLine(output.Text));
+
             DotNetRestore(setting => setting
                 .SetProjectFile(Solution));
         });
@@ -63,19 +77,34 @@ class Build : NukeBuild
         .DependsOn(Restore)
         .Executes(() =>
         {
+            // How to use Sonar — https://github.com/nuke-build/nuke/pull/206
+            //SonarScannerTasks
+            //    .SonarScannerBegin(setting => setting
+            //        .SetProjectKey("Rth")
+            //    );
+
             DotNetBuild(setting => setting
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetAssemblyVersion(GitVersion.AssemblySemVer)
                 .SetFileVersion(GitVersion.AssemblySemFileVer)
                 .SetInformationalVersion(GitVersion.InformationalVersion)
-                .EnableNoRestore());
+                .EnableNoRestore()
+                .EnableRunCodeAnalysis()
+                .SetRunCodeAnalysis(true)
+                );
+
+            //SonarScannerTasks.SonarScannerEnd();
         });
+
+    AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
 
     Target Test => _ => _
         .DependsOn(Compile)
         .Executes(() =>
         {
+            FileSystemTasks.DeleteDirectory(CoverageOutputFolder);
+
             DotNetTest(setting => setting
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
@@ -87,7 +116,32 @@ class Build : NukeBuild
                 //! IMPORTANT: Test project needs to reference coverlet.msbuild nuget package
                 .EnableCollectCoverage()
                 .SetCoverletOutputFormat(CoverletOutputFormat.opencover)
-                .SetCoverletOutput("./coverage-output/")
+                .SetCoverletOutput($"{CoverageOutputFolder}/")
             );
+
+
+        });
+
+    Target CodeCovPermission => _ => _
+        .DependsOn(Test)
+        .Executes(() =>
+        {
+            ProcessTasks.StartProcess(toolPath: "chmod"
+                    , arguments: "777 codecov-uploader"
+                    , workingDirectory: RootDirectory)
+                .Output.ForEach(output => Console.WriteLine(output.Text));
+        });
+
+    [LocalExecutable("./codecov-uploader")] readonly Tool CodecovUploader;
+
+    Target CodecovUpload => _ => _
+        .DependsOn(CodeCovPermission, Test)
+        .Requires(() => CODECOV)
+        .Executes(() =>
+        {
+            CodecovUploader(arguments: @$"-t {CODECOV} -s {CoverageOutputFolder}/"
+                    , workingDirectory: RootDirectory
+                    , timeout: 3600)
+                .ForEach(output => Console.WriteLine(output.Text));
         });
 }

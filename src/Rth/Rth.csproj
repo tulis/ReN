@@ -5,4 +5,8 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="dotnet-framework-sonarscanner" Version="4.10.0" />
+  </ItemGroup>
+
 </Project>
