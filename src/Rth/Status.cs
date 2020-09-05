@@ -1,6 +1,9 @@
-public enum Status
+namespace Rth
 {
-    Error
-    , Success
-    , Warning
+    public enum Status
+    {
+        Error
+        , Success
+        , Warning
+    }
 }
