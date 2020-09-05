@@ -28,7 +28,7 @@ namespace Rth
                 , TInput input
                 , IEnumerable<TMessage> messages)
             {
-                if(!messages.Any())
+                if(!messages?.Any() ?? true)
                 {
                     throw new ArgumentException(
                         $"[{nameof(messages)}] cannot be empty when creating ERROR result.");
@@ -48,7 +48,7 @@ namespace Rth
                 , TInput input
                 , params TMessage[] messages)
             {
-                if(!messages.Any())
+                if(!messages?.Any() ?? true)
                 {
                     throw new ArgumentException(
                         $"[{nameof(messages)}] cannot be empty when creating ERROR result.");

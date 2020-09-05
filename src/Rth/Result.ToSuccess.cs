@@ -43,7 +43,7 @@ namespace Rth
                 return new Result<TInput, TOutput, TMessage>(
                     input
                     , output
-                    , messages
+                    , messages ?? Enumerable.Empty<TMessage>()
                     , Status.Success);
             }
 
@@ -57,7 +57,7 @@ namespace Rth
                 return new Result<TInput, TOutput, TMessage>(
                     input
                     , output
-                    , messages
+                    , messages ?? Enumerable.Empty<TMessage>()
                     , Status.Success);
             }
     }
