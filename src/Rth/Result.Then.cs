@@ -10,7 +10,7 @@ namespace Rth
             Then<TInput, TPreviousOutput, TNextOutput, TMessage>(
                 this IEnumerable<IEnumerable<IResult<TInput,TPreviousOutput, TMessage>>> previousResults
                 , Func<IEnumerable<TPreviousOutput>
-                    , IEnumerable<IEnumerable<IResult<TPreviousOutput, TNextOutput, TMessage>>>> 
+                    , IEnumerable<IEnumerable<IResult<TPreviousOutput, TNextOutput, TMessage>>>>
                     @do
                 , Func<TInput, TMessage> onNotFoundMessage)
             {
