@@ -9,6 +9,7 @@ using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.CoverallsNet;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitHub;
@@ -25,8 +26,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
     , On = new[] { GitHubActionsTrigger.Push }
-    , InvokedTargets = new[] { nameof(CodecovUpload)}
-    , ImportSecrets = new[] { nameof(CODECOV)})]
+    , InvokedTargets = new[] { nameof(UploadCoverage)}
+    , ImportSecrets = new[] { nameof(CODECOV), nameof(COVERALLS_TOKEN) })]
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 class Build : NukeBuild
@@ -46,11 +47,15 @@ class Build : NukeBuild
     [GitRepository] readonly GitRepository GitRepository;
     [GitVersion] readonly GitVersion GitVersion;
 
+    AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
+    AbsolutePath ToolsDirectory => RootDirectory / "tools";
+    AbsolutePath ToolCoveralls => ToolsDirectory / "csmacnz.Coveralls";
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
     [Parameter] readonly string CODECOV;
+    [Parameter] readonly string COVERALLS_TOKEN;
 
     Target Clean => _ => _
         .Before(Restore)
@@ -93,11 +98,9 @@ class Build : NukeBuild
                 .EnableRunCodeAnalysis()
                 .SetRunCodeAnalysis(true)
                 );
-
+            Console.WriteLine("Git SHA: " + this.GitVersion.Sha);
             //SonarScannerTasks.SonarScannerEnd();
         });
-
-    AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
 
     Target Test => _ => _
         .DependsOn(Compile)
@@ -120,6 +123,37 @@ class Build : NukeBuild
             );
 
 
+        });
+
+    Target ToolsRestore => _ => _
+        .Executes(() =>
+        {
+            DotNetToolInstall(setting => setting
+                .SetPackageName("coveralls.net")
+                .SetGlobal(false)
+                .SetToolInstallationPath(ToolsDirectory)
+                );
+        });
+
+    Target UploadCoverage => _ => _
+        .DependsOn(Test, ToolsRestore)
+        .Requires(() => COVERALLS_TOKEN)
+        .Executes(() =>
+        {
+            CoverageOutputFolder.GlobFiles("*.xml").ForEach(openCoverAbsolutePath =>
+            {
+                CoverallsNetTasks.CoverallsNet(setting => setting
+                    .SetRepoToken(COVERALLS_TOKEN)
+                    .SetOpenCover(true)
+                    .SetInput(openCoverAbsolutePath)
+                    .SetToolPath(ToolCoveralls)
+                    .SetCommitBranch(this.GitRepository.Branch)
+                    //!++ Should use this.GitRepository.Commit
+                    //!++ Once nuke is upgraded to version 0.25
+                    .SetCommitId(this.GitVersion.Sha)
+                    );
+
+            });
         });
 
     Target CodeCovPermission => _ => _

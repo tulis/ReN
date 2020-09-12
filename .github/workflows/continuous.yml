@@ -24,7 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd CodecovUpload'
-        run: ./build.cmd CodecovUpload
+      - name: Run './build.cmd UploadCoverage'
+        run: ./build.cmd UploadCoverage
         env:
             CODECOV: ${{ secrets.CODECOV }}
+            COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
