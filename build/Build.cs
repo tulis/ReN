@@ -27,7 +27,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     , GitHubActionsImage.UbuntuLatest
     , On = new[] { GitHubActionsTrigger.Push }
     , InvokedTargets = new[] { nameof(UploadCoverage)}
-    , ImportSecrets = new[] { nameof(CODECOV), nameof(COVERALLS_TOKEN) })]
+    , ImportSecrets = new[] { nameof(COVERALLS_TOKEN) })]
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 class Build : NukeBuild
@@ -54,7 +54,6 @@ class Build : NukeBuild
     AbsolutePath ToolCoveralls => ToolsDirectory / "csmacnz.Coveralls";
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
-    [Parameter] readonly string CODECOV;
     [Parameter] readonly string COVERALLS_TOKEN;
 
     Target Clean => _ => _
@@ -69,11 +68,6 @@ class Build : NukeBuild
     Target Restore => _ => _
         .Executes(() =>
         {
-            //ProcessTasks.StartProcess(toolPath: "chmod"
-            //            , arguments: "777 codecov-uploader"
-            //            , workingDirectory: RootDirectory)
-            //        .Output.ForEach(output => Console.WriteLine(output.Text));
-
             DotNetRestore(setting => setting
                 .SetProjectFile(Solution));
         });
@@ -154,28 +148,5 @@ class Build : NukeBuild
                     );
 
             });
-        });
-
-    Target CodeCovPermission => _ => _
-        .DependsOn(Test)
-        .Executes(() =>
-        {
-            ProcessTasks.StartProcess(toolPath: "chmod"
-                    , arguments: "777 codecov-uploader"
-                    , workingDirectory: RootDirectory)
-                .Output.ForEach(output => Console.WriteLine(output.Text));
-        });
-
-    [LocalExecutable("./codecov-uploader")] readonly Tool CodecovUploader;
-
-    Target CodecovUpload => _ => _
-        .DependsOn(CodeCovPermission, Test)
-        .Requires(() => CODECOV)
-        .Executes(() =>
-        {
-            CodecovUploader(arguments: @$"-t {CODECOV} -s {CoverageOutputFolder}/"
-                    , workingDirectory: RootDirectory
-                    , timeout: 3600)
-                .ForEach(output => Console.WriteLine(output.Text));
         });
 }
