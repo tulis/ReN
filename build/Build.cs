@@ -137,7 +137,7 @@ class Build : NukeBuild
         .Requires(() => COVERALLS_TOKEN)
         .Executes(() =>
         {
-            CoverageOutputFolder.GlobFiles("*.xml").ForEach(openCoverAbsolutePath =>
+            CoverageOutputFolder.GlobFiles("*.opencover.xml").ForEach(openCoverAbsolutePath =>
             {
                 CoverallsNetTasks.CoverallsNet(setting => setting
                     .SetRepoToken(COVERALLS_TOKEN)
