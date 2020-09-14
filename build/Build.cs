@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.CI.GitHubActions.Configuration;
 using Nuke.Common.Execution;
@@ -26,8 +27,15 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
     , On = new[] { GitHubActionsTrigger.Push }
-    , InvokedTargets = new[] { nameof(UploadCoverage)}
+    , InvokedTargets = new[] { nameof(UploadCoverageToCoveralls)}
     , ImportSecrets = new[] { nameof(COVERALLS_TOKEN) })]
+[AzurePipelines(
+    suffix: null
+    , AzurePipelinesImage.UbuntuLatest
+    , AzurePipelinesImage.WindowsLatest
+    , AzurePipelinesImage.MacOsLatest
+    , InvokedTargets = new[] { nameof(UploadCoverageToAzurePipelines) }
+    , NonEntryTargets = new[] { nameof(Restore), nameof(Compile), nameof(Test) })]
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
 class Build : NukeBuild
@@ -38,10 +46,12 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main () => Execute<Build>(build => build.Test);
+    public static int Main() => Execute<Build>(build => build.Test);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+
+    [CI] readonly AzurePipelines AzurePipelines;
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
@@ -96,7 +106,8 @@ class Build : NukeBuild
             //SonarScannerTasks.SonarScannerEnd();
         });
 
-    [Partition(3)] readonly Partition TestPartition;
+    //+ Partition # should match number of test projects
+    [Partition(1)] readonly Partition TestPartition;
 
     Target Test => _ => _
         .DependsOn(Compile)
@@ -118,8 +129,6 @@ class Build : NukeBuild
                 .SetCoverletOutputFormat(CoverletOutputFormat.opencover)
                 .SetCoverletOutput($"{CoverageOutputFolder}/")
             );
-
-
         });
 
     Target ToolsRestore => _ => _
@@ -149,7 +158,23 @@ class Build : NukeBuild
                     //!++ Once nuke is upgraded to version 0.25
                     .SetCommitId(this.GitVersion.Sha)
                     );
-
             });
+        });
+
+    Target UploadCoverageToAzurePipelines => _ => _
+        .DependsOn(Test)
+        .Executes(() =>
+        {
+            ReportGeneratorTasks.ReportGenerator(setting => setting
+                .SetReports(CoverageOutputFolder / "*.opencover.xml")
+                .SetReportTypes(ReportTypes.Cobertura, ReportTypes.HtmlInline)
+                .SetTargetDirectory(CoverageOutputFolder)
+                .SetFramework("netcoreapp3.0")
+                );
+
+            AzurePipelines?.PublishCodeCoverage(
+                AzurePipelinesCodeCoverageToolType.Cobertura,
+                CoverageOutputFolder / $"{nameof(ReportTypes.Cobertura)}.xml",
+                CoverageOutputFolder);
         });
 }
