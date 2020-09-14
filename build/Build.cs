@@ -132,7 +132,7 @@ class Build : NukeBuild
                 );
         });
 
-    Target UploadCoverage => _ => _
+    Target UploadCoverageToCoveralls => _ => _
         .DependsOn(Test, ToolsRestore)
         .Requires(() => COVERALLS_TOKEN)
         .Executes(() =>
