@@ -121,6 +121,26 @@ namespace Rth.Tests
             string output
             , string input)
         {
+            var result = output.ToSuccess<string, string, string>(input, messages: default(string[]));
+
+            result.Should().NotBeNull();
+            result.Status.Should().BeEquivalentTo(Status.Success);
+            result.IsSuccess.Should().BeTrue();
+            result.IsError.Should().BeFalse();
+            result.IsWarning.Should().BeFalse();
+            result.Messages.Should().BeEmpty();
+            result.Input.Should().BeEquivalentTo(input);
+            result.Output.Should().BeEquivalentTo(output);
+        }
+
+        [Theory]
+        [AutoData]
+        [InlineAutoData(null)]
+        [InlineAutoData(null, null)]
+        public void WithEmptyParamsMessage(
+            string output
+            , string input)
+        {
             var result = output.ToSuccess<string, string, string>(input, messages: new string[0]);
 
             result.Should().NotBeNull();
