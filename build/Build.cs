@@ -86,7 +86,7 @@ class Build : NukeBuild
         .DependsOn(Restore)
         .Executes(() =>
         {
-            // How to use Sonar â€” https://github.com/nuke-build/nuke/pull/206
+            // How to use Sonar — https://github.com/nuke-build/nuke/pull/206
             //SonarScannerTasks
             //    .SonarScannerBegin(setting => setting
             //        .SetProjectKey("Rth")
@@ -105,6 +105,8 @@ class Build : NukeBuild
             Console.WriteLine("Git SHA: " + this.GitVersion.Sha);
             //SonarScannerTasks.SonarScannerEnd();
         });
+
+    Target CC => _ => _.Triggers(Clean, Compile);
 
     //+ Partition # should match number of test projects
     [Partition(1)] readonly Partition TestPartition;
