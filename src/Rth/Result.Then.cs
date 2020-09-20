@@ -81,7 +81,12 @@ namespace Rth
                                 .ToError(message: onNotFoundMessage(joinPreviousOutput.Input)
                                     , input: joinPreviousOutput.Input));
 
-                    yield return failedNextOutputs.Concat(unMatchedResults).ToList();
+                    var finalFailedNextOutputs = failedNextOutputs.Concat(unMatchedResults).ToList();
+
+                    if(finalFailedNextOutputs.Any())
+                    {
+                        yield return finalFailedNextOutputs;
+                    }
                 }
             }
     }
