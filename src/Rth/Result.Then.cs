@@ -54,15 +54,22 @@ namespace Rth
 
                                 if (joinNextOutput.IsError)
                                 {
-                                    return joinNextOutput.Output.ToError(previousOutput.Input, joinNextOutput.Messages);
+                                    return joinNextOutput.Output.ToError(
+                                        previousOutput.Input
+                                        , previousOutput.Messages.Concat(joinNextOutput.Messages));
                                 }
-                                else if (joinNextOutput.IsWarning)
+                                else if (previousOutput.IsWarning
+                                    || joinNextOutput.IsWarning)
                                 {
-                                    return joinNextOutput.Output.ToWarning(previousOutput.Input, joinNextOutput.Messages);
+                                    return joinNextOutput.Output.ToWarning(
+                                        previousOutput.Input
+                                        , previousOutput.Messages.Concat(joinNextOutput.Messages));
                                 }
                                 else
                                 {
-                                    return joinNextOutput.Output.ToSuccess<TInput, TNextOutput, TMessage>(previousOutput.Input);
+                                    return joinNextOutput.Output.ToSuccess<TInput, TNextOutput, TMessage>(
+                                        previousOutput.Input
+                                        , previousOutput.Messages.Concat(joinNextOutput.Messages));
                                 }
                             })
                             .ToList();
