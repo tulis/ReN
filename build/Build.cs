@@ -171,7 +171,7 @@ class Build : NukeBuild
                 .SetReports(CoverageOutputFolder / "*.opencover.xml")
                 .SetReportTypes(ReportTypes.Cobertura, ReportTypes.HtmlInline)
                 .SetTargetDirectory(CoverageOutputFolder)
-                .SetFramework("netcoreapp3.0")
+                .SetFramework("net5.0")
                 );
 
             AzurePipelines?.PublishCodeCoverage(
