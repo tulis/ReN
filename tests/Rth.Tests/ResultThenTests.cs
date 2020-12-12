@@ -1,5 +1,4 @@
-﻿using AutoFixture.Xunit2;
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,8 +24,7 @@ namespace Rth.Tests
                 .WithMessage("Value cannot be null. (Parameter 'previousResults')");
         }
 
-        [Theory]
-        [InlineAutoData]
+        [Fact]
         public void ThenTests()
         {
             var originalInputs = new[]{Enumerable.Range(0, count: 16)
