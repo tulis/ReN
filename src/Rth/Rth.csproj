@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="dotnet-framework-sonarscanner" Version="4.10.0" />
+    <PackageReference Include="dotnet-framework-sonarscanner" Version="5.0.4" />
   </ItemGroup>
 
 </Project>
