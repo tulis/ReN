@@ -89,21 +89,6 @@ namespace Rth.Tests
             }
 
             IEnumerable<IEnumerable<IResult<long, double, string>>>
-                AssertModToLong(IEnumerable<long> inputs)
-            {
-                var results = inputs
-                    .Select(input =>
-                    {
-                        return Enumerable
-                            .Range(0, count: 1)
-                            .Select(index => ((double)index).ToSuccess<long, double, string>(input
-                                , message: $"long input {input} to double is successful."));
-                    });
-
-                return results.ToList();
-            }
-
-            IEnumerable<IEnumerable<IResult<long, double, string>>>
                 LongToDouble(IEnumerable<long> inputs)
             {
                 var results = inputs
