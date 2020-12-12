@@ -154,7 +154,7 @@ class Build : NukeBuild
                     .SetRepoToken(COVERALLS_TOKEN)
                     .SetOpenCover(true)
                     .SetInput(openCoverAbsolutePath)
-                    .SetToolPath(ToolCoveralls)
+                    .SetProcessToolPath(ToolCoveralls)
                     .SetCommitBranch(this.GitRepository.Branch)
                     //!++ Should use this.GitRepository.Commit
                     //!++ Once nuke is upgraded to version 0.25
