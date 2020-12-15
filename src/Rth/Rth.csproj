@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Authors>tsur</Authors>
+    <PackageProjectUrl>https://github.com/tulis/Rth</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tulis/Rth</RepositoryUrl>
+    <PackageTags>dataflow, data-flow, rop, railway-oriented-programming</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© tsur 2020</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
