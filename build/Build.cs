@@ -55,7 +55,7 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [GitVersion] readonly GitVersion GitVersion;
+    [Required] [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)] readonly GitVersion GitVersion;
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
     AbsolutePath SourceDirectory => RootDirectory / "src";
@@ -86,7 +86,7 @@ class Build : NukeBuild
         .DependsOn(Restore)
         .Executes(() =>
         {
-            // How to use Sonar — https://github.com/nuke-build/nuke/pull/206
+            // How to use Sonar â€” https://github.com/nuke-build/nuke/pull/206
             //SonarScannerTasks
             //    .SonarScannerBegin(setting => setting
             //        .SetProjectKey("Rth")
