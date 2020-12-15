@@ -12,9 +12,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B66C09D9-557C-4FCD-B620-381B463BE750}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rth.Tests", "tests\Rth.Tests\Rth.Tests.csproj", "{74E95D29-DD3E-45C3-8F78-FED47DB771BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rth.Tests", "tests\Rth.Tests\Rth.Tests.csproj", "{74E95D29-DD3E-45C3-8F78-FED47DB771BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
