@@ -1,0 +1,49 @@
+= Building, Debugging and Testing on Windows
+
+== Pre-requisite
+* https://nuke.build/docs/getting-started/setup.html[Install nuke build]
++
+```
+C:\github> dotnet tool install Nuke.GlobalTool --global
+```
+
+== Working with the code
+
+* Clone https://github.com/tulis/Rth
++
+```
+C:\github> git clone https://github.com/tulis/Rth.git
+```
+* Clean solution
++
+```
+C:\github\Rth> nuke Clean
+```
+* Restore nuget packages
++
+```
+C:\github\Rth> nuke Restore
+```
+* Compile solution
++
+```
+C:\github\Rth> nuke Compile
+```
+
+
+== Running tests
+
+There are a number of options for running the tests:
+
+* Command Line
++
+```
+C:\github\Rth> nuke Test
+```
+* Test Explorer
+** Tests can be run and debugged from the Test Explorer window. For best performance, roslyn team recommend the following:
+*** Open Tools → Options... → Test
+**** Check the box for Discover tests in real time from source files
+**** Uncheck the box for Additionally discover tests from build assemblies...
+*** Use the Search box of Test Explorer to narrow the scope of visible tests to the feature(s) you are working on
+*** When you are not actively running tests, set the search query to `__NonExistent__` to hide all tests from the UI
