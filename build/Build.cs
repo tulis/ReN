@@ -75,11 +75,11 @@ class Build : NukeBuild
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
 
-    AbsolutePath PackageDirectory => OutputDirectory / "packages";
+    AbsolutePath PackageDirectory => this.OutputDirectory / "packages";
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ToolsDirectory => RootDirectory / "tools";
-    AbsolutePath ToolCoveralls => ToolsDirectory / "csmacnz.Coveralls";
+    AbsolutePath ToolCoveralls => this.ToolsDirectory / "csmacnz.Coveralls";
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
     [Parameter] readonly string COVERALLS_TOKEN;
@@ -91,16 +91,16 @@ class Build : NukeBuild
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
-    string Source => IsOriginalRepository ? NuGetPackageSource : GitHubPackageSource;
-    IReadOnlyCollection<AbsolutePath> PackageFiles => PackageDirectory.GlobFiles("*.nupkg");
+    string Source => this.IsOriginalRepository ? this.NuGetPackageSource : this.GitHubPackageSource;
+    IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
 
     Target Clean => _ => _
-        .Before(Restore)
+        .Before(this.Restore)
         .Executes(() =>
         {
-            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(OutputDirectory);
+            this.SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
+            this.TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
+            EnsureCleanDirectory(this.OutputDirectory);
         });
 
     Target Restore => _ => _
@@ -111,7 +111,7 @@ class Build : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Restore)
+        .DependsOn(this.Restore)
         .Executes(() =>
         {
             // How to use Sonar — https://github.com/nuke-build/nuke/pull/206
@@ -135,12 +135,12 @@ class Build : NukeBuild
             Console.WriteLine("Git InformationalVersion: " + this.GitVersion.InformationalVersion);
 
             var publishConfigurations =
-                from project in new[] { RthProject }
+                from project in new[] { this.RthProject }
                 from framework in project.GetTargetFrameworks()
                 select new { project, framework };
 
             DotNetPublish(_ => _
-                    .SetNoRestore(InvokedTargets.Contains(Restore))
+                    .SetNoRestore(this.InvokedTargets.Contains(this.Restore))
                     .SetConfiguration(Configuration)
                     .SetRepositoryUrl(GitRepository.HttpsUrl)
                     .SetAssemblyVersion(GitVersion.AssemblySemVer)
@@ -154,18 +154,18 @@ class Build : NukeBuild
             //SonarScannerTasks.SonarScannerEnd();
         });
 
-    Target CC => _ => _.Triggers(Clean, Compile);
+    Target CC => _ => _.Triggers(this.Clean, this.Compile);
 
     Target Pack => _ => _
-        .DependsOn(Compile)
-        .Produces(PackageDirectory / "*.nupkg")
+        .DependsOn(this.Compile)
+        .Produces(this.PackageDirectory / "*.nupkg")
         .Executes(() =>
         {
             DotNetPack(_ => _
                 .SetProject(Solution)
-                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetNoBuild(this.InvokedTargets.Contains(this.Compile))
                 .SetConfiguration(Configuration)
-                .SetOutputDirectory(PackageDirectory)
+                .SetOutputDirectory(this.PackageDirectory)
                 .SetVersion(GitVersion.NuGetVersionV2)
                 //.SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile, GitRepository))
             );
@@ -207,7 +207,7 @@ class Build : NukeBuild
     [Partition(1)] readonly Partition TestPartition;
 
     Target Test => _ => _
-        .DependsOn(Compile)
+        .DependsOn(this.Compile)
         .Partition(() => TestPartition)
         .Executes(() =>
         {
@@ -234,12 +234,12 @@ class Build : NukeBuild
             DotNetToolInstall(setting => setting
                 .SetPackageName("coveralls.net")
                 .SetGlobal(false)
-                .SetToolInstallationPath(ToolsDirectory)
+                .SetToolInstallationPath(this.ToolsDirectory)
                 );
         });
 
     Target UploadCoverageToCoveralls => _ => _
-        .DependsOn(Test, ToolsRestore)
+        .DependsOn(this.Test, this.ToolsRestore)
         .Requires(() => COVERALLS_TOKEN)
         .Executes(() =>
         {
@@ -249,7 +249,7 @@ class Build : NukeBuild
                     .SetRepoToken(COVERALLS_TOKEN)
                     .SetOpenCover(true)
                     .SetInput(openCoverAbsolutePath)
-                    .SetProcessToolPath(ToolCoveralls)
+                    .SetProcessToolPath(this.ToolCoveralls)
                     .SetCommitBranch(this.GitRepository.Branch)
                     //!++ Should use this.GitRepository.Commit
                     //!++ Once nuke is upgraded to version 0.25
@@ -259,7 +259,7 @@ class Build : NukeBuild
         });
 
     Target UploadCoverageToAzurePipelines => _ => _
-        .DependsOn(Test)
+        .DependsOn(this.Test)
         .Executes(() =>
         {
             ReportGeneratorTasks.ReportGenerator(setting => setting
