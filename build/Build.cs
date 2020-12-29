@@ -178,9 +178,12 @@ class Build : NukeBuild
         .Requires(() => !String.IsNullOrWhiteSpace(this.NUGET_API_KEY) || !this.IsOriginalRepository)
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
         .Requires(() => this.Configuration.Equals(Configuration.Release))
-        .Requires(() => this.IsOriginalRepository && this.GitRepository.IsOnMasterBranch() ||
-                        this.IsOriginalRepository && this.GitRepository.IsOnReleaseBranch() ||
-                        !this.IsOriginalRepository && this.GitRepository.IsOnDevelopBranch())
+        .Requires(() => this.IsOriginalRepository)
+        //!++ We are not using GitFlow
+        //.Requires(() => this.IsOriginalRepository && this.GitRepository.IsOnMasterBranch()
+        //    || this.IsOriginalRepository && this.GitRepository.IsOnReleaseBranch()
+        //    || !this.IsOriginalRepository && this.GitRepository.IsOnDevelopBranch()
+        //)
         .Executes(() =>
         {
             if (!this.IsOriginalRepository)
