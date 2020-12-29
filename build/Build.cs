@@ -186,7 +186,7 @@ class Build : NukeBuild
         //)
         .Executes(() =>
         {
-            if (!this.IsOriginalRepository)
+            if (this.IsOriginalRepository)
             {
                 DotNetNuGetAddSource(_ => _
                     .SetSource(this.GitHubPackageSource)
