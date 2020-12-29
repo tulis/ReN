@@ -55,7 +55,7 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [Required] [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)] readonly GitVersion GitVersion;
+    [Required] [GitVersion(Framework = "net5.0", NoFetch = true)] readonly GitVersion GitVersion;
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
     AbsolutePath SourceDirectory => RootDirectory / "src";
