@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -13,6 +14,7 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.CoverallsNet;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.ReportGenerator;
@@ -31,6 +33,17 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     , On = new[] { GitHubActionsTrigger.Push }
     , InvokedTargets = new[] { nameof(UploadCoverageToCoveralls)}
     , ImportSecrets = new[] { nameof(COVERALLS_TOKEN) })]
+[GitHubActions(
+    "deployment"
+    , GitHubActionsImage.UbuntuLatest
+    //, OnPushBranches = new[] { MasterBranch, ReleaseBranchPrefix + "/*" }
+    , InvokedTargets = new[] { nameof(Publish) }
+    , ImportGitHubTokenAs = nameof(GITHUB_TOKEN)
+    , ImportSecrets =
+        new[]
+        {
+            nameof(NUGET_API_KEY)
+        })]
 [AzurePipelines(
     suffix: null
     , AzurePipelinesImage.UbuntuLatest
@@ -54,12 +67,15 @@ class Build : NukeBuild
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [CI] readonly AzurePipelines AzurePipelines;
+    [CI] readonly GitHubActions GitHubActions;
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
     [Required] [GitVersion(Framework = "net5.0", NoFetch = true)] readonly GitVersion GitVersion;
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
+
+    AbsolutePath PackageDirectory => OutputDirectory / "packages";
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ToolsDirectory => RootDirectory / "tools";
@@ -67,8 +83,16 @@ class Build : NukeBuild
     AbsolutePath OutputDirectory => RootDirectory / "output";
 
     [Parameter] readonly string COVERALLS_TOKEN;
+    [Parameter] readonly string GITHUB_TOKEN;
+    [Parameter] readonly string NUGET_API_KEY;
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
+
+    string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
+    bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
+    string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
+    string Source => IsOriginalRepository ? NuGetPackageSource : GitHubPackageSource;
+    IReadOnlyCollection<AbsolutePath> PackageFiles => PackageDirectory.GlobFiles("*.nupkg");
 
     Target Clean => _ => _
         .Before(Restore)
@@ -131,6 +155,53 @@ class Build : NukeBuild
         });
 
     Target CC => _ => _.Triggers(Clean, Compile);
+
+    Target Pack => _ => _
+        .DependsOn(Compile)
+        .Produces(PackageDirectory / "*.nupkg")
+        .Executes(() =>
+        {
+            DotNetPack(_ => _
+                .SetProject(Solution)
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetConfiguration(Configuration)
+                .SetOutputDirectory(PackageDirectory)
+                .SetVersion(GitVersion.NuGetVersionV2)
+                //.SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile, GitRepository))
+            );
+        });
+
+    Target Publish => _ => _
+        .ProceedAfterFailure()
+        .DependsOn(this.Clean, this.Test, this.Pack)
+        .Consumes(this.Pack)
+        .Requires(() => !String.IsNullOrWhiteSpace(this.NUGET_API_KEY) || !this.IsOriginalRepository)
+        .Requires(() => GitTasks.GitHasCleanWorkingCopy())
+        .Requires(() => this.Configuration.Equals(Configuration.Release))
+        .Requires(() => this.IsOriginalRepository && this.GitRepository.IsOnMasterBranch() ||
+                        this.IsOriginalRepository && this.GitRepository.IsOnReleaseBranch() ||
+                        !this.IsOriginalRepository && this.GitRepository.IsOnDevelopBranch())
+        .Executes(() =>
+        {
+            if (!this.IsOriginalRepository)
+            {
+                DotNetNuGetAddSource(_ => _
+                    .SetSource(this.GitHubPackageSource)
+                    .SetUsername(this.GitHubActions.GitHubActor)
+                    .SetPassword(this.GITHUB_TOKEN));
+            }
+
+            ControlFlow.Assert(this.PackageFiles.Count == 1, "packages.Count == 1");
+
+            DotNetNuGetPush(_ => _
+                    .SetSource(this.Source)
+                    .SetApiKey(this.NUGET_API_KEY)
+                    .CombineWith(this.PackageFiles, (_, v) => _
+                        .SetTargetPath(v))
+                , degreeOfParallelism: 5
+                , completeOnFailure: true);
+        });
+
 
     //+ Partition # should match number of test projects
     [Partition(1)] readonly Partition TestPartition;
