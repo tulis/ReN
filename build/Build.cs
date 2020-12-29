@@ -191,7 +191,8 @@ class Build : NukeBuild
                 DotNetNuGetAddSource(_ => _
                     .SetSource(this.GitHubPackageSource)
                     .SetUsername(this.GitHubActions.GitHubActor)
-                    .SetPassword(this.GITHUB_TOKEN));
+                    .SetPassword(this.GITHUB_TOKEN)
+                    .SetStorePasswordInClearText(storePasswordInClearText: true));
             }
 
             ControlFlow.Assert(this.PackageFiles.Count == 1, "packages.Count == 1");
