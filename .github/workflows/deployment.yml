@@ -16,7 +16,7 @@
 
 name: deployment
 
-on:
+on: [workflow_dispatch]
 
 jobs:
   ubuntu-latest:
