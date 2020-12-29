@@ -26,6 +26,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
+    , GitHubActionsImage.MacOsLatest
+    , GitHubActionsImage.WindowsLatest
     , On = new[] { GitHubActionsTrigger.Push }
     , InvokedTargets = new[] { nameof(UploadCoverageToCoveralls)}
     , ImportSecrets = new[] { nameof(COVERALLS_TOKEN) })]
