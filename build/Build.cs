@@ -66,6 +66,8 @@ class Build : NukeBuild
 
     [Parameter] readonly string COVERALLS_TOKEN;
 
+    Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
+
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
@@ -102,7 +104,27 @@ class Build : NukeBuild
                 .EnableRunCodeAnalysis()
                 .SetRunCodeAnalysis(true)
                 );
+
             Console.WriteLine("Git SHA: " + this.GitVersion.Sha);
+            Console.WriteLine("Git InformationalVersion: " + this.GitVersion.InformationalVersion);
+
+            var publishConfigurations =
+                from project in new[] { RthProject }
+                from framework in project.GetTargetFrameworks()
+                select new { project, framework };
+
+            DotNetPublish(_ => _
+                    .SetNoRestore(InvokedTargets.Contains(Restore))
+                    .SetConfiguration(Configuration)
+                    .SetRepositoryUrl(GitRepository.HttpsUrl)
+                    .SetAssemblyVersion(GitVersion.AssemblySemVer)
+                    .SetFileVersion(GitVersion.AssemblySemFileVer)
+                    .SetInformationalVersion(GitVersion.InformationalVersion)
+                    .CombineWith(publishConfigurations, (_, v) => _
+                        .SetProject(v.project)
+                        .SetFramework(v.framework))
+                , degreeOfParallelism: 10);
+
             //SonarScannerTasks.SonarScannerEnd();
         });
 
