@@ -1,0 +1,17 @@
+mode: ContinuousDelivery
+
+assembly-versioning-scheme: MajorMinor
+assembly-file-versioning-scheme: MajorMinorPatch
+
+branches:
+  master:
+    tag: ''
+  scratch:
+    regex: ^scratch$|^scratch$
+    source-branches: ['master']
+    tag: 'alpha'
+  release:
+    tag: 'beta'
+
+ignore:
+  sha: []
