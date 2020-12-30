@@ -112,10 +112,10 @@ class Build : NukeBuild
         });
 
     Target BumpVersion => _ => _
+        .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
         .Requires(() => GitVerTagExtension.IsBumpVersionValid(this.BUMP_VERSION))
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
         .Requires(() => !String.IsNullOrWhiteSpace(this.GitLatestTag))
-        .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
         .Executes(() =>
         {
             var gitVerTag = Enums.Parse<GitVerTag>(this.BUMP_VERSION, ignoreCase: true, EnumFormat.DisplayName);
