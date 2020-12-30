@@ -28,21 +28,3 @@ jobs:
         run: ./build.cmd UploadCoverageToCoveralls
         env:
             COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-  macOS-latest:
-    name: macOS-latest
-    runs-on: macOS-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Run './build.cmd UploadCoverageToCoveralls'
-        run: ./build.cmd UploadCoverageToCoveralls
-        env:
-            COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-  windows-latest:
-    name: windows-latest
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Run './build.cmd UploadCoverageToCoveralls'
-        run: ./build.cmd UploadCoverageToCoveralls
-        env:
-            COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
