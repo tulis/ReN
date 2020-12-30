@@ -226,7 +226,7 @@ class Build : NukeBuild
 
     Target Publish => _ => _
         .ProceedAfterFailure()
-        .DependsOn(this.Clean, this.Test, this.Pack)
+        .DependsOn(this.BumpVersion, this.Clean, this.Test, this.Pack)
         .Consumes(this.Pack)
         .Requires(() => !String.IsNullOrWhiteSpace(this.NUGET_API_KEY) || !this.IsOriginalRepository)
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
