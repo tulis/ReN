@@ -112,7 +112,7 @@ class Build : NukeBuild
         });
 
     Target BumpVersion => _ => _
-        .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
+        .After(this.InstallGitVerTag, this.GitDescribeLatestTag)
         .Requires(() => GitVerTagExtension.IsBumpVersionValid(this.BUMP_VERSION))
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
         .Requires(() => !String.IsNullOrWhiteSpace(this.GitLatestTag))
