@@ -191,6 +191,7 @@ class Build : NukeBuild
 
                 DotNetTasks.DotNetNuGetPush(_ => _
                     .SetSource(this.GitHubPackageSource)
+                    .SetApiKey(this.GITHUB_TOKEN)
                     .CombineWith(this.PackageFiles, (_, v) => _
                         .SetTargetPath(v))
                 , degreeOfParallelism: 5
