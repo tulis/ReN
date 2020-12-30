@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EnumsNET;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AzurePipelines;
@@ -27,17 +28,17 @@ using Octokit;
     , On = new[] { GitHubActionsTrigger.Push }
     , InvokedTargets = new[] { nameof(UploadCoverageToCoveralls)}
     , ImportSecrets = new[] { nameof(COVERALLS_TOKEN) })]
-[GitHubActions(
-    "deployment"
-    , GitHubActionsImage.UbuntuLatest
-    //, OnPushBranches = new[] { MasterBranch, ReleaseBranchPrefix + "/*" }
-    , InvokedTargets = new[] { nameof(Publish) }
-    , ImportGitHubTokenAs = nameof(GITHUB_TOKEN)
-    , ImportSecrets =
-        new[]
-        {
-            nameof(NUGET_API_KEY)
-        })]
+//[GitHubActions(
+//    "deployment"
+//    , GitHubActionsImage.UbuntuLatest
+//    //, OnPushBranches = new[] { MasterBranch, ReleaseBranchPrefix + "/*" }
+//    , InvokedTargets = new[] { nameof(Publish) }
+//    , ImportGitHubTokenAs = nameof(GITHUB_TOKEN)
+//    , ImportSecrets =
+//        new[]
+//        {
+//            nameof(NUGET_API_KEY)
+//        })]
 [AzurePipelines(
     suffix: null
     , AzurePipelinesImage.UbuntuLatest
@@ -65,7 +66,7 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [Required] [GitVersion(Framework = "net5.0", NoFetch = true)] readonly GitVersion GitVersion;
+    [Nuke.Common.Required] [GitVersion(Framework = "net5.0", NoFetch = true)] readonly GitVersion GitVersion;
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
 
@@ -79,6 +80,10 @@ class Build : NukeBuild
     [Parameter] readonly string COVERALLS_TOKEN;
     [Parameter] readonly string GITHUB_TOKEN;
     [Parameter] readonly string NUGET_API_KEY;
+    [Parameter] readonly string BUMP_MESSAGE;
+    [Parameter] readonly string BUMP_VERSION;
+
+    string GitLatestTag;
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
 
@@ -86,6 +91,61 @@ class Build : NukeBuild
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
     IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
+
+    // https://github.com/kyoh86/git-vertag
+    Target InstallGitVerTag => _ => _
+        .Executes(() =>
+        {
+            ProcessTasks.StartProcess(toolPath: "go"
+                , arguments: $"get github.com/kyoh86/git-vertag"
+                //, logInvocation: false
+                , logOutput: true);
+        });
+
+    Target GitDescribeLatestTag => _ => _
+        .Executes(() =>
+        {
+            var outputs = GitTasks.Git(arguments: "describe"
+                , logOutput: true);
+
+            this.GitLatestTag = outputs.FirstOrDefault().Text;
+        });
+
+    Target BumpVersion => _ => _
+        .Requires(() => GitVerTagExtension.IsBumpVersionValid(this.BUMP_VERSION))
+        .Requires(() => GitTasks.GitHasCleanWorkingCopy())
+        .Requires(() => !String.IsNullOrWhiteSpace(this.GitLatestTag))
+        .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
+        .Executes(() =>
+        {
+            var gitVerTag = Enums.Parse<GitVerTag>(this.BUMP_VERSION, ignoreCase: true, EnumFormat.DisplayName);
+            var doesContainPreTag = GitVerTagExtension.ContainsPreTag(this.GitLatestTag);
+            var cannotBumpErrorMessage = $"Cannot bump [{this.BUMP_VERSION}] from [{this.GitLatestTag}] as it is in alpha/beta state. Valid options are []";
+            var gitVerTagMessage = String.IsNullOrWhiteSpace(this.BUMP_MESSAGE)
+                ? String.Empty
+                : $" -m '{this.BUMP_MESSAGE}'";
+
+            var vertagArguments = (gitVerTag, doesContainPreTag) switch
+            {
+                (GitVerTag.Major, true) => throw new ArgumentException(cannotBumpErrorMessage)
+                , (GitVerTag.Minor, true) => throw new ArgumentException(cannotBumpErrorMessage)
+                , (GitVerTag.Patch, true) => throw new ArgumentException(cannotBumpErrorMessage)
+
+                , (GitVerTag.Major, false) => $"vertag major --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Minor, false) => $"vertag minor --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Patch, false) => $"vertag patch --pre alpha --prefix ''{gitVerTagMessage}"
+
+                , (GitVerTag.Alpha, _) => $"vertag --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Beta, _) => $"vertag --pre beta --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Release, _) => $"vertag release --prefix ''{gitVerTagMessage}"
+
+                , _ => throw new ArgumentOutOfRangeException(
+                    paramName: nameof(this.BUMP_VERSION)
+                    , message: $"{nameof(this.BUMP_VERSION)} [{this.BUMP_VERSION}] is not supported. Only [{String.Join(separator: ", ", Enums.GetMembers<GitVerTag>().Select(gitVerTag => gitVerTag.AsString()))}] are accepted.")
+            };
+
+            GitTasks.Git(arguments: vertagArguments, logOutput: true);
+        });
 
     Target Clean => _ => _
         .Before(this.Restore)

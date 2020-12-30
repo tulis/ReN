@@ -16,7 +16,15 @@
 
 name: deployment
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      BUMP_VERSION:
+        description: 'Bump Version (major|minor|patch|alpha|beta):'
+        required: true
+      BUMP_MESSAGE:
+        description: 'Bump Message (optional):'
+        required: false
 
 jobs:
   ubuntu-latest:
@@ -29,6 +37,8 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+            BUMP_VERSION: ${{ github.event.inputs.BUMP_VERSION }}
+            BUMP_MESSAGE: ${{ github.event.inputs.BUMP_MESSAGE }}
       - uses: actions/upload-artifact@v1
         with:
           name: packages
