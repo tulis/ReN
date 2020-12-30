@@ -11,10 +11,11 @@
         <Copyright>© tsur 2020</Copyright>
     </PropertyGroup>
 
-
-
     <ItemGroup>
-        <PackageReference Include="dotnet-framework-sonarscanner" Version="5.0.4" />
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="8.16.0.25740">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
 </Project>
