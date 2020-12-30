@@ -85,7 +85,6 @@ class Build : NukeBuild
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
-    string Source => this.IsOriginalRepository ? this.NuGetPackageSource : this.GitHubPackageSource;
     IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
 
     Target Clean => _ => _
@@ -189,10 +188,17 @@ class Build : NukeBuild
                     .SetUsername(this.GitHubActions.GitHubActor)
                     .SetPassword(this.GITHUB_TOKEN)
                     .SetStorePasswordInClearText(storePasswordInClearText: true));
+
+                DotNetTasks.DotNetNuGetPush(_ => _
+                    .SetSource(this.GitHubPackageSource)
+                    .CombineWith(this.PackageFiles, (_, v) => _
+                        .SetTargetPath(v))
+                , degreeOfParallelism: 5
+                , completeOnFailure: true);
             }
 
             DotNetTasks.DotNetNuGetPush(_ => _
-                    .SetSource(this.Source)
+                    .SetSource(this.NuGetPackageSource)
                     .SetApiKey(this.NUGET_API_KEY)
                     .CombineWith(this.PackageFiles, (_, v) => _
                         .SetTargetPath(v))
