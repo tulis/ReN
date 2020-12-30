@@ -21,10 +21,6 @@ using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Tools.SonarScanner;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
-using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [GitHubActions("continuous"
     , GitHubActionsImage.UbuntuLatest
@@ -98,15 +94,15 @@ class Build : NukeBuild
         .Before(this.Restore)
         .Executes(() =>
         {
-            this.SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            this.TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(this.OutputDirectory);
+            this.SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(FileSystemTasks.DeleteDirectory);
+            this.TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(FileSystemTasks.DeleteDirectory);
+            FileSystemTasks.EnsureCleanDirectory(this.OutputDirectory);
         });
 
     Target Restore => _ => _
         .Executes(() =>
         {
-            DotNetRestore(setting => setting
+            DotNetTasks.DotNetRestore(setting => setting
                 .SetProjectFile(Solution));
         });
 
@@ -120,7 +116,7 @@ class Build : NukeBuild
             //        .SetProjectKey("Rth")
             //    );
 
-            DotNetBuild(setting => setting
+            DotNetTasks.DotNetBuild(setting => setting
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetAssemblyVersion(GitVersion.AssemblySemVer)
@@ -139,7 +135,7 @@ class Build : NukeBuild
                 from framework in project.GetTargetFrameworks()
                 select new { project, framework };
 
-            DotNetPublish(_ => _
+            DotNetTasks.DotNetPublish(_ => _
                     .SetNoRestore(this.InvokedTargets.Contains(this.Restore))
                     .SetConfiguration(Configuration)
                     .SetRepositoryUrl(GitRepository.HttpsUrl)
@@ -161,7 +157,7 @@ class Build : NukeBuild
         .Produces(this.PackageDirectory / "*.nupkg")
         .Executes(() =>
         {
-            DotNetPack(_ => _
+            DotNetTasks.DotNetPack(_ => _
                 .SetProject(Solution)
                 .SetNoBuild(this.InvokedTargets.Contains(this.Compile))
                 .SetConfiguration(Configuration)
@@ -188,7 +184,7 @@ class Build : NukeBuild
         {
             if (this.IsOriginalRepository)
             {
-                DotNetNuGetAddSource(_ => _
+                DotNetTasks.DotNetNuGetAddSource(_ => _
                     .SetSource(this.GitHubPackageSource)
                     .SetUsername(this.GitHubActions.GitHubActor)
                     .SetPassword(this.GITHUB_TOKEN)
@@ -197,7 +193,7 @@ class Build : NukeBuild
 
             ControlFlow.Assert(this.PackageFiles.Count == 1, "packages.Count == 1");
 
-            DotNetNuGetPush(_ => _
+            DotNetTasks.DotNetNuGetPush(_ => _
                     .SetSource(this.Source)
                     .SetApiKey(this.NUGET_API_KEY)
                     .CombineWith(this.PackageFiles, (_, v) => _
@@ -217,7 +213,7 @@ class Build : NukeBuild
         {
             FileSystemTasks.DeleteDirectory(CoverageOutputFolder);
 
-            DotNetTest(setting => setting
+            DotNetTasks.DotNetTest(setting => setting
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .EnableNoRestore()
@@ -235,7 +231,7 @@ class Build : NukeBuild
     Target ToolsRestore => _ => _
         .Executes(() =>
         {
-            DotNetToolInstall(setting => setting
+            DotNetTasks.DotNetToolInstall(setting => setting
                 .SetPackageName("coveralls.net")
                 .SetGlobal(false)
                 .SetToolInstallationPath(this.ToolsDirectory)
