@@ -180,6 +180,8 @@ class Build : NukeBuild
         //)
         .Executes(() =>
         {
+            ControlFlow.Assert(this.PackageFiles.Count == 1, "packages.Count == 1");
+
             if (this.IsOriginalRepository)
             {
                 DotNetTasks.DotNetNuGetAddSource(_ => _
@@ -188,8 +190,6 @@ class Build : NukeBuild
                     .SetPassword(this.GITHUB_TOKEN)
                     .SetStorePasswordInClearText(storePasswordInClearText: true));
             }
-
-            ControlFlow.Assert(this.PackageFiles.Count == 1, "packages.Count == 1");
 
             DotNetTasks.DotNetNuGetPush(_ => _
                     .SetSource(this.Source)
