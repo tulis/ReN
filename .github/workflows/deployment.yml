@@ -41,6 +41,9 @@ jobs:
           ls -halF $GOPATH
           ls -halF $GOPATH/bin
           ls -halF $GOPATH/src/github.com/*
+          git config --global user.name 'tulis'
+          git config --global user.email 'tulis@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           ./build.cmd BumpVersion
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
