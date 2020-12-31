@@ -83,10 +83,9 @@ class Build : NukeBuild
     [Parameter] readonly string BUMP_MESSAGE;
     [Parameter] readonly string BUMP_VERSION;
 
-    string GitLatestTag;
+    string GitLatestTag { get; set; }
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
-
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
@@ -115,9 +114,11 @@ class Build : NukeBuild
         .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
         .Requires(() => GitVerTagExtension.IsBumpVersionValid(this.BUMP_VERSION))
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
-        .Requires(() => !String.IsNullOrWhiteSpace(this.GitLatestTag))
         .Executes(() =>
         {
+            ControlFlow.Assert(!String.IsNullOrWhiteSpace(this.GitLatestTag)
+                , text: $"[{nameof(this.GitDescribeLatestTag)}] failed to get the latest tag.");
+
             var gitVerTag = Enums.Parse<GitVerTag>(this.BUMP_VERSION, ignoreCase: true, EnumFormat.DisplayName);
             var doesContainPreTag = GitVerTagExtension.ContainsPreTag(this.GitLatestTag);
             var cannotBumpErrorMessage = $"Cannot bump [{this.BUMP_VERSION}] from [{this.GitLatestTag}] as it is in alpha/beta state. Valid options are []";
