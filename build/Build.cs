@@ -105,7 +105,7 @@ class Build : NukeBuild
     Target GitDescribeLatestTag => _ => _
         .Executes(() =>
         {
-            var outputs = GitTasks.Git(arguments: "describe"
+            var outputs = GitTasks.Git(arguments: "describe --abbrev=0"
                 , logOutput: true);
 
             this.GitLatestTag = outputs.FirstOrDefault().Text;
