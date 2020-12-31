@@ -66,7 +66,12 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [Nuke.Common.Required] [GitVersion(Framework = "net5.0", NoFetch = true)] readonly GitVersion GitVersion;
+
+    readonly Lazy<GitVersion> GitVersionLazy = new Lazy<GitVersion>(()
+        => GitVersionTasks.GitVersion(setting => setting
+                .SetFramework("net5.0")
+                .SetNoFetch(noFetch: true)
+            ).Result);
 
     AbsolutePath CoverageOutputFolder = RootDirectory / "coverage-output/";
 
@@ -87,6 +92,7 @@ class Build : NukeBuild
     string GitLatestTag { get; set; }
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
+
     string ExpandedGoPath => EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}");
     string GoGitSemvToolPath => $"{this.ExpandedGoPath}/bin/git-semv";
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
@@ -148,6 +154,7 @@ class Build : NukeBuild
         });
 
     Target BumpVersion => _ => _
+        .Before(this.Compile, this.Test, this.Pack)
         .DependsOn(this.InstallGoGitSemver, this.SetGitRemoteUrl)
         .Requires(() => EnumExtension.IsEnumValid<Versioning.Semantic>(this.BUMP_SEMANTIC))
         .Requires(() => EnumExtension.IsEnumValid<Versioning.Stability>(this.BUMP_STABILITY))
@@ -211,16 +218,16 @@ class Build : NukeBuild
             DotNetTasks.DotNetBuild(setting => setting
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion)
+                .SetAssemblyVersion(this.GitVersionLazy.Value.AssemblySemVer)
+                .SetFileVersion(this.GitVersionLazy.Value.AssemblySemFileVer)
+                .SetInformationalVersion(this.GitVersionLazy.Value.InformationalVersion)
                 .EnableNoRestore()
                 .EnableRunCodeAnalysis()
                 .SetRunCodeAnalysis(true)
                 );
 
-            Console.WriteLine("Git SHA: " + this.GitVersion.Sha);
-            Console.WriteLine("Git InformationalVersion: " + this.GitVersion.InformationalVersion);
+            Console.WriteLine("Git SHA: " + this.GitVersionLazy.Value.Sha);
+            Console.WriteLine("Git InformationalVersion: " + this.GitVersionLazy.Value.InformationalVersion);
 
             var publishConfigurations =
                 from project in new[] { this.RthProject }
@@ -231,9 +238,9 @@ class Build : NukeBuild
                     .SetNoRestore(this.InvokedTargets.Contains(this.Restore))
                     .SetConfiguration(Configuration)
                     .SetRepositoryUrl(GitRepository.HttpsUrl)
-                    .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                    .SetFileVersion(GitVersion.AssemblySemFileVer)
-                    .SetInformationalVersion(GitVersion.InformationalVersion)
+                    .SetAssemblyVersion(GitVersionLazy.Value.AssemblySemVer)
+                    .SetFileVersion(GitVersionLazy.Value.AssemblySemFileVer)
+                    .SetInformationalVersion(GitVersionLazy.Value.InformationalVersion)
                     .CombineWith(publishConfigurations, (_, v) => _
                         .SetProject(v.project)
                         .SetFramework(v.framework))
@@ -254,7 +261,7 @@ class Build : NukeBuild
                 .SetNoBuild(this.InvokedTargets.Contains(this.Compile))
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(this.PackageDirectory)
-                .SetVersion(GitVersion.SemVer)
+                .SetVersion(GitVersionLazy.Value.SemVer)
                 //.SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile, GitRepository))
             );
         });
@@ -353,7 +360,7 @@ class Build : NukeBuild
                     .SetCommitBranch(this.GitRepository.Branch)
                     //!++ Should use this.GitRepository.Commit
                     //!++ Once nuke is upgraded to version 0.25
-                    .SetCommitId(this.GitVersion.Sha)
+                    .SetCommitId(this.GitVersionLazy.Value.Sha)
                     );
             });
         });
