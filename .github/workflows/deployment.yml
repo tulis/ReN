@@ -36,17 +36,13 @@ jobs:
       - name: Run './build.cmd BumpVersion'
         run: |
           export GOPATH=/home/runner/go
-          echo $GOPATH
-          go get -v github.com/kyoh86/git-vertag
-          ls -halF $GOPATH
-          ls -halF $GOPATH/bin
-          ls -halF $GOPATH/src/github.com/*
-          # echo 'SET GitHub Remote URL'
-          # git config --global user.name 'tulis'
-          # git config --global user.email 'tulis@users.noreply.github.com'
-          # git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-          git remote -v
-          ./build.cmd BumpVersion
+          # echo $GOPATH
+          # go get -v github.com/kyoh86/git-vertag
+          # ls -halF $GOPATH
+          # ls -halF $GOPATH/bin
+          # ls -halF $GOPATH/src/github.com/*
+          # git remote -v
+          ./build.cmd Publish
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
