@@ -121,14 +121,6 @@ class Build : NukeBuild
                 , logOutput: true);
 
             goProcess.AssertZeroExitCode();
-
-            goProcess = ProcessTasks.StartProcess(
-                toolPath: "ls"
-                , arguments: $"-halF {EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}")}/src/github.com/*"
-                , logInvocation: true
-                , logOutput: true);
-
-            goProcess.AssertZeroExitCode();
         });
 
     Target GitDescribeLatestTag => _ => _
