@@ -96,8 +96,25 @@ class Build : NukeBuild
         .Executes(() =>
         {
             var goProcess = ProcessTasks.StartProcess(
+                toolPath: "echo"
+                , arguments: "$GOPATH"
+                , logInvocation: true
+                , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
+
+            goProcess = ProcessTasks.StartProcess(
+                toolPath: "go"
+                , arguments: $"version"
+                , logInvocation: true
+                , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
+
+            goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
                 , arguments: $"get -v github.com/kyoh86/git-vertag"
+                , logInvocation: true
                 , logOutput: true);
 
             goProcess.AssertZeroExitCode();
