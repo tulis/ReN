@@ -254,7 +254,7 @@ class Build : NukeBuild
                 .SetNoBuild(this.InvokedTargets.Contains(this.Compile))
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(this.PackageDirectory)
-                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetVersion(GitVersion.SemVer)
                 //.SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile, GitRepository))
             );
         });
