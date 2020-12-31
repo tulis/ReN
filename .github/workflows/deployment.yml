@@ -33,7 +33,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run './build.cmd BumpVersion'
-        run: ./build.cmd BumpVersion
+        run: |
+          echo $GOPATH
+          go get -v github.com/kyoh86/git-vertag
+          ls -halF $GOPATH
+          ls -halF $GOPATH/bin
+          ls -halF $GOPATH/src/github.com/*
+          ./build.cmd BumpVersion
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
