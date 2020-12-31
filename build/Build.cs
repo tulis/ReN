@@ -95,9 +95,12 @@ class Build : NukeBuild
     Target InstallGitVerTag => _ => _
         .Executes(() =>
         {
-            ProcessTasks.StartProcess(toolPath: "go"
+            var goProcess = ProcessTasks.StartProcess(
+                toolPath: "go"
                 , arguments: $"get -v github.com/kyoh86/git-vertag"
                 , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
         });
 
     Target GitDescribeLatestTag => _ => _
@@ -147,6 +150,7 @@ class Build : NukeBuild
             var gitVertagProcess = ProcessTasks.StartProcess(
                 toolPath: "git-vertag"
                 , arguments: vertagArguments
+                , logInvocation: true
                 , logOutput: true);
 
             gitVertagProcess.AssertZeroExitCode();
