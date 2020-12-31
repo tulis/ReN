@@ -129,17 +129,17 @@ class Build : NukeBuild
     Target SetGitRemoteUrl => _ => _
         .Executes(() =>
         {
-            GitTasks.Git(arguments: $"remote"
+            GitTasks.Git(arguments: $"remote -v"
                 , logInvocation: true
                 , logOutput: true);
 
-            GitTasks.Git(arguments: $"remote remove origin"
-                , logInvocation: true
-                , logOutput: true);
+            //GitTasks.Git(arguments: $"remote remove origin"
+            //    , logInvocation: true
+            //    , logOutput: true);
 
-            GitTasks.Git(arguments: $"remote set-url origin {this.GitHubRemoteUrl}"
-                , logInvocation: true
-                , logOutput: true);
+            //GitTasks.Git(arguments: $"remote set-url origin {this.GitHubRemoteUrl}"
+            //    , logInvocation: true
+            //    , logOutput: true);
         });
 
     Target BumpVersion => _ => _
