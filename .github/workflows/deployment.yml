@@ -32,8 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd Publish'
-        run: ./build.cmd Publish
+      - name: Run './build.cmd BumpVersion'
+        run: ./build.cmd BumpVersion
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
