@@ -96,6 +96,14 @@ class Build : NukeBuild
         .Executes(() =>
         {
             var goProcess = ProcessTasks.StartProcess(
+                toolPath: "export"
+                , arguments: "GOPATH=/home/runner/go"
+                , logInvocation: true
+                , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
+
+            goProcess = ProcessTasks.StartProcess(
                 toolPath: "echo"
                 , arguments: "$GOPATH"
                 , logInvocation: true
