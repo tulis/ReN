@@ -22,7 +22,7 @@ on:
       BUMP_SEMANTIC:
         description: 'Bump Semantic (major|minor|patch):'
         required: true
-      BUMP_MESSAGE:
+      BUMP_STABILITY:
         description: 'Bump Stability (alpha|beta|release):'
         required: true
         default: alpha
