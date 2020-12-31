@@ -137,8 +137,8 @@ class Build : NukeBuild
 
             var goGitSemvArguments = (stability) switch
             {
-                (Versioning.Stability.Release) => $"{semantic.AsString()} --bump"
-                , _ => $"{semantic.AsString()} --pre {stability.AsString()} --bump"
+                (Versioning.Stability.Release) => $"{semantic.AsString(EnumFormat.DisplayName)} --bump"
+                , _ => $"{semantic.AsString(EnumFormat.DisplayName)} --pre {stability.AsString(EnumFormat.DisplayName)} --bump"
             };
 
             var gitSemvProcess = ProcessTasks.StartProcess(

@@ -68,6 +68,6 @@ public static class EnumExtension
     {
         return String.Join(separator: separator
             , Enums.GetMembers<TEnum>()
-            .Select(tEnum => tEnum.AsString()));
+            .Select(tEnum => tEnum.AsString(EnumFormat.DisplayName)));
     }
 }
