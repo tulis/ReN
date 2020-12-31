@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd BumpVersion'
+      - name: Run './build.cmd Publish'
         run: |
           export GOPATH=/home/runner/go
           ./build.cmd Publish
