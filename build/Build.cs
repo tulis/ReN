@@ -126,6 +126,7 @@ class Build : NukeBuild
             goProcess.AssertZeroExitCode();
         });
 
+    // https://stackoverflow.com/questions/57921401/push-to-origin-from-github-action
     Target SetGitRemoteUrl => _ => _
         .Executes(() =>
         {
@@ -168,7 +169,7 @@ class Build : NukeBuild
 
             var nextVersion = gitSemvProcess.Output.FirstOrDefault().Text;
 
-            GitTasks.Git(arguments: $"tag -a {nextVersion}"
+            GitTasks.Git(arguments: $"tag -a {nextVersion} -m ''"
                 , logInvocation: true
                 , logOutput: true);
 
