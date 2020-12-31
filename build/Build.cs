@@ -134,13 +134,17 @@ class Build : NukeBuild
                 , logInvocation: true
                 , logOutput: true);
 
-            //GitTasks.Git(arguments: $"remote remove origin"
-            //    , logInvocation: true
-            //    , logOutput: true);
+            GitTasks.Git(arguments: $"config --global user.name '{this.GitHubActions.GitHubActor}'"
+                , logInvocation: true
+                , logOutput: true);
 
-            //GitTasks.Git(arguments: $"remote set-url origin {this.GitHubRemoteUrl}"
-            //    , logInvocation: true
-            //    , logOutput: true);
+            GitTasks.Git(arguments: $"config --global user.email '{this.GitHubActions.GitHubActor}@users.noreply.github.com'"
+                , logInvocation: true
+                , logOutput: true);
+
+            GitTasks.Git(arguments: $"remote set-url origin {this.GitHubRemoteUrl}"
+                , logInvocation: true
+                , logOutput: true);
         });
 
     Target BumpVersion => _ => _
