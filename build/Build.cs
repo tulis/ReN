@@ -90,7 +90,7 @@ class Build : NukeBuild
     string ExpandedGoPath => EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}");
     string GoGitSemvToolPath => $"{this.ExpandedGoPath}/bin/git-semv";
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
-    string GitHubRemoteUrl => $"https://{this.GitHubActions.GitHubActor}:{this.GITHUB_TOKEN}@github.com/{this.GitHubActions.GitHubRepository}.git";
+    string GitHubRemoteUrl => $"https://{this.GitHubActions.GitHubActor}:{this.GITHUB_TOKEN}@github.com/{this.GitHubActions.GitHubRepository}";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
     IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
