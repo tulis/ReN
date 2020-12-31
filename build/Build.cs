@@ -95,15 +95,9 @@ class Build : NukeBuild
     Target InstallGitVerTag => _ => _
         .Executes(() =>
         {
+            EnvironmentInfo.SetVariable(name: "GOPATH", value: "/home/runner/go");
+
             var goProcess = ProcessTasks.StartProcess(
-                toolPath: "export"
-                , arguments: "GOPATH=/home/runner/go"
-                , logInvocation: true
-                , logOutput: true);
-
-            goProcess.AssertZeroExitCode();
-
-            goProcess = ProcessTasks.StartProcess(
                 toolPath: "echo"
                 , arguments: "$GOPATH"
                 , logInvocation: true
