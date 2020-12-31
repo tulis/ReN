@@ -131,20 +131,26 @@ class Build : NukeBuild
                 , (GitVerTag.Minor, true) => throw new ArgumentException(cannotBumpErrorMessage)
                 , (GitVerTag.Patch, true) => throw new ArgumentException(cannotBumpErrorMessage)
 
-                , (GitVerTag.Major, false) => $"vertag major --pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Minor, false) => $"vertag minor --pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Patch, false) => $"vertag patch --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Major, false) => $"major --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Minor, false) => $"minor --pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Patch, false) => $"patch --pre alpha --prefix ''{gitVerTagMessage}"
 
-                , (GitVerTag.Alpha, _) => $"vertag --pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Beta, _) => $"vertag --pre beta --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Release, _) => $"vertag release --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Alpha, _) => $"--pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Beta, _) => $"--pre beta --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Release, _) => $"release --prefix ''{gitVerTagMessage}"
 
                 , _ => throw new ArgumentOutOfRangeException(
                     paramName: nameof(this.BUMP_VERSION)
                     , message: $"{nameof(this.BUMP_VERSION)} [{this.BUMP_VERSION}] is not supported. Only [{String.Join(separator: ", ", Enums.GetMembers<GitVerTag>().Select(gitVerTag => gitVerTag.AsString()))}] are accepted.")
             };
 
-            var verTagOutputs = GitTasks.Git(arguments: vertagArguments, logOutput: true);
+            var gitVertagProcess = ProcessTasks.StartProcess(
+                toolPath: "git-vertag"
+                , arguments: vertagArguments
+                , logOutput: true);
+
+            gitVertagProcess.AssertZeroExitCode();
+            var verTagOutputs = gitVertagProcess.Output;
             GitTasks.Git(arguments: $"push origin {verTagOutputs.FirstOrDefault().Text}", logOutput: true);
         });
 
