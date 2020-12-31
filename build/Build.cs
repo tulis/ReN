@@ -145,7 +145,8 @@ class Build : NukeBuild
                     , message: $"{nameof(this.BUMP_VERSION)} [{this.BUMP_VERSION}] is not supported. Only [{String.Join(separator: ", ", Enums.GetMembers<GitVerTag>().Select(gitVerTag => gitVerTag.AsString()))}] are accepted.")
             };
 
-            GitTasks.Git(arguments: vertagArguments, logOutput: true);
+            var verTagOutputs = GitTasks.Git(arguments: vertagArguments, logOutput: true);
+            GitTasks.Git(arguments: $"push origin {verTagOutputs.FirstOrDefault().Text}", logOutput: true);
         });
 
     Target Clean => _ => _
