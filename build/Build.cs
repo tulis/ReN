@@ -87,6 +87,7 @@ class Build : NukeBuild
     string GitLatestTag { get; set; }
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
+    string ExpandedGoPath => EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}");
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
@@ -96,7 +97,7 @@ class Build : NukeBuild
     Target InstallGitVerTag => _ => _
         .Executes(() =>
         {
-            Logger.Info($"{nameof(this.GOPATH)}={EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}")}");
+            Logger.Info($"{nameof(this.GOPATH)}={this.ExpandedGoPath}");
 
             var goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
@@ -116,7 +117,7 @@ class Build : NukeBuild
 
             goProcess = ProcessTasks.StartProcess(
                 toolPath: "ls"
-                , arguments: $"-halF {EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}")}/bin"
+                , arguments: $"-halF {this.ExpandedGoPath}/bin"
                 , logInvocation: true
                 , logOutput: true);
 
@@ -168,7 +169,7 @@ class Build : NukeBuild
             };
 
             var gitVertagProcess = ProcessTasks.StartProcess(
-                toolPath: "git-vertag"
+                toolPath: $"{this.ExpandedGoPath}/bin/git-vertag"
                 , arguments: vertagArguments
                 , logInvocation: true
                 , logOutput: true);
