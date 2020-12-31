@@ -80,6 +80,7 @@ class Build : NukeBuild
     [Parameter] readonly string COVERALLS_TOKEN;
     [Parameter] readonly string GITHUB_TOKEN;
     [Parameter] readonly string NUGET_API_KEY;
+    [Parameter] readonly string GOPATH;
     [Parameter] readonly string BUMP_MESSAGE;
     [Parameter] readonly string BUMP_VERSION;
 
@@ -95,17 +96,9 @@ class Build : NukeBuild
     Target InstallGitVerTag => _ => _
         .Executes(() =>
         {
-            EnvironmentInfo.SetVariable(name: "GOPATH", value: "/home/runner/go");
+            Logger.Info($"{nameof(this.GOPATH)}={this.GOPATH}");
 
             var goProcess = ProcessTasks.StartProcess(
-                toolPath: "echo"
-                , arguments: "$GOPATH"
-                , logInvocation: true
-                , logOutput: true);
-
-            goProcess.AssertZeroExitCode();
-
-            goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
                 , arguments: $"version"
                 , logInvocation: true
@@ -116,6 +109,22 @@ class Build : NukeBuild
             goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
                 , arguments: $"get -v github.com/kyoh86/git-vertag"
+                , logInvocation: true
+                , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
+
+            goProcess = ProcessTasks.StartProcess(
+                toolPath: "ls"
+                , arguments: $"-halF $GOPATH/bin"
+                , logInvocation: true
+                , logOutput: true);
+
+            goProcess.AssertZeroExitCode();
+
+            goProcess = ProcessTasks.StartProcess(
+                toolPath: "ls"
+                , arguments: $"-halF $GOPATH/src/github.com/*"
                 , logInvocation: true
                 , logOutput: true);
 
