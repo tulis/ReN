@@ -96,7 +96,7 @@ class Build : NukeBuild
     Target InstallGitVerTag => _ => _
         .Executes(() =>
         {
-            Logger.Info($"{nameof(this.GOPATH)}={this.GOPATH}");
+            Logger.Info($"{nameof(this.GOPATH)}={EnvironmentInfo.ExpandVariables($"{nameof(this.GOPATH)}")}");
 
             var goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
@@ -116,7 +116,7 @@ class Build : NukeBuild
 
             goProcess = ProcessTasks.StartProcess(
                 toolPath: "ls"
-                , arguments: $"-halF $GOPATH/bin"
+                , arguments: $"-halF {EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}")}/bin"
                 , logInvocation: true
                 , logOutput: true);
 
