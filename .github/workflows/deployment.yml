@@ -36,13 +36,6 @@ jobs:
       - name: Run './build.cmd BumpVersion'
         run: |
           export GOPATH=/home/runner/go
-          # echo $GOPATH
-          # go get -v github.com/kyoh86/git-vertag
-          # ls -halF $GOPATH
-          # ls -halF $GOPATH/bin
-          # ls -halF $GOPATH/src/github.com/*
-          # git remote -v
-          # ./build.cmd BumpVersion
           ./build.cmd Publish
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -166,8 +166,8 @@ class Build : NukeBuild
 
             var goGitSemvArguments = (stability) switch
             {
-                (Versioning.Stability.Release) => $"{semantic.AsString(EnumFormat.DisplayName)}"
-                , _ => $"{semantic.AsString(EnumFormat.DisplayName)} --pre {stability.AsString(EnumFormat.DisplayName)}"
+                (Versioning.Stability.Release) => $"{semantic.AsString(EnumFormat.DisplayName)} --bump"
+                , _ => $"{semantic.AsString(EnumFormat.DisplayName)} --pre {stability.AsString(EnumFormat.DisplayName)} --bump"
             };
 
             var gitSemvProcess = ProcessTasks.StartProcess(
@@ -177,16 +177,6 @@ class Build : NukeBuild
                 , logOutput: true);
 
             gitSemvProcess.AssertZeroExitCode();
-
-            var nextVersion = gitSemvProcess.Output.FirstOrDefault().Text;
-
-            GitTasks.Git(arguments: $"tag -a {nextVersion} -m ''"
-                , logInvocation: true
-                , logOutput: true);
-
-            GitTasks.Git(arguments: $"push origin {nextVersion}"
-                , logInvocation: true
-                , logOutput: true);
         });
 
     Target Clean => _ => _
