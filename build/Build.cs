@@ -81,20 +81,21 @@ class Build : NukeBuild
     [Parameter] readonly string GITHUB_TOKEN;
     [Parameter] readonly string NUGET_API_KEY;
     [Parameter] readonly string GOPATH;
-    [Parameter] readonly string BUMP_MESSAGE;
-    [Parameter] readonly string BUMP_VERSION;
+    [Parameter] readonly string BUMP_STABILITY;
+    [Parameter] readonly string BUMP_SEMANTIC;
 
     string GitLatestTag { get; set; }
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
     string ExpandedGoPath => EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}");
+    string GoGitSemvToolPath => $"{this.ExpandedGoPath}/bin/git-semv";
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
     bool IsOriginalRepository => GitRepository.Identifier == "tulis/Rth";
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
     IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
 
-    // https://github.com/kyoh86/git-vertag
-    Target InstallGitVerTag => _ => _
+    // https://github.com/linyows/git-semv
+    Target InstallGoGitSemver => _ => _
         .Executes(() =>
         {
             Logger.Info($"{nameof(this.GOPATH)}={this.ExpandedGoPath}");
@@ -109,7 +110,7 @@ class Build : NukeBuild
 
             goProcess = ProcessTasks.StartProcess(
                 toolPath: "go"
-                , arguments: $"get -v github.com/kyoh86/git-vertag"
+                , arguments: $"get -v -u github.com/linyows/git-semv/cmd/git-semv"
                 , logInvocation: true
                 , logOutput: true);
 
@@ -124,59 +125,29 @@ class Build : NukeBuild
             goProcess.AssertZeroExitCode();
         });
 
-    Target GitDescribeLatestTag => _ => _
-        .Executes(() =>
-        {
-            var outputs = GitTasks.Git(arguments: "describe --abbrev=0"
-                , logOutput: true);
-
-            this.GitLatestTag = outputs.FirstOrDefault().Text;
-        });
-
     Target BumpVersion => _ => _
-        .DependsOn(this.InstallGitVerTag, this.GitDescribeLatestTag)
-        .Requires(() => GitVerTagExtension.IsBumpVersionValid(this.BUMP_VERSION))
+        .DependsOn(this.InstallGoGitSemver)
+        .Requires(() => EnumExtension.IsEnumValid<Versioning.Semantic>(this.BUMP_SEMANTIC))
+        .Requires(() => EnumExtension.IsEnumValid<Versioning.Stability>(this.BUMP_STABILITY))
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
         .Executes(() =>
         {
-            ControlFlow.Assert(!String.IsNullOrWhiteSpace(this.GitLatestTag)
-                , text: $"[{nameof(this.GitDescribeLatestTag)}] failed to get the latest tag.");
+            var stability = EnumExtension.ParseDisplayName<Versioning.Stability>(this.BUMP_STABILITY);
+            var semantic = EnumExtension.ParseDisplayName<Versioning.Semantic>(this.BUMP_SEMANTIC);
 
-            var gitVerTag = Enums.Parse<GitVerTag>(this.BUMP_VERSION, ignoreCase: true, EnumFormat.DisplayName);
-            var doesContainPreTag = GitVerTagExtension.ContainsPreTag(this.GitLatestTag);
-            var cannotBumpErrorMessage = $"Cannot bump [{this.BUMP_VERSION}] from [{this.GitLatestTag}] as it is in alpha/beta state. Valid options are []";
-            var gitVerTagMessage = String.IsNullOrWhiteSpace(this.BUMP_MESSAGE)
-                ? String.Empty
-                : $" -m '{this.BUMP_MESSAGE}'";
-
-            var vertagArguments = (gitVerTag, doesContainPreTag) switch
+            var goGitSemvArguments = (stability) switch
             {
-                (GitVerTag.Major, true) => throw new ArgumentException(cannotBumpErrorMessage)
-                , (GitVerTag.Minor, true) => throw new ArgumentException(cannotBumpErrorMessage)
-                , (GitVerTag.Patch, true) => throw new ArgumentException(cannotBumpErrorMessage)
-
-                , (GitVerTag.Major, false) => $"major --pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Minor, false) => $"minor --pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Patch, false) => $"patch --pre alpha --prefix ''{gitVerTagMessage}"
-
-                , (GitVerTag.Alpha, _) => $"pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Beta, _) => $"pre beta --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Release, _) => $"release --prefix ''{gitVerTagMessage}"
-
-                , _ => throw new ArgumentOutOfRangeException(
-                    paramName: nameof(this.BUMP_VERSION)
-                    , message: $"{nameof(this.BUMP_VERSION)} [{this.BUMP_VERSION}] is not supported. Only [{String.Join(separator: ", ", Enums.GetMembers<GitVerTag>().Select(gitVerTag => gitVerTag.AsString()))}] are accepted.")
+                (Versioning.Stability.Release) => $"{semantic.AsString()} --bump"
+                , _ => $"{semantic.AsString()} --pre {stability.AsString()} --bump"
             };
 
-            var gitVertagProcess = ProcessTasks.StartProcess(
-                toolPath: $"{this.ExpandedGoPath}/bin/git-vertag"
-                , arguments: vertagArguments
+            var gitSemvProcess = ProcessTasks.StartProcess(
+                toolPath: this.GoGitSemvToolPath
+                , arguments: goGitSemvArguments
                 , logInvocation: true
                 , logOutput: true);
 
-            gitVertagProcess.AssertZeroExitCode();
-            var verTagOutputs = gitVertagProcess.Output;
-            GitTasks.Git(arguments: $"push origin {verTagOutputs.FirstOrDefault().Text}", logOutput: true);
+            gitSemvProcess.AssertZeroExitCode();
         });
 
     Target Clean => _ => _
