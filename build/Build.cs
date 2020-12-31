@@ -126,8 +126,16 @@ class Build : NukeBuild
             goProcess.AssertZeroExitCode();
         });
 
+    Target SetGitRemoteUrl => _ => _
+        .Executes(() =>
+        {
+            GitTasks.Git(arguments: $"remote set-url --push origin {this.GitHubRemoteUrl}"
+                , logInvocation: true
+                , logOutput: true);
+        });
+
     Target BumpVersion => _ => _
-        .DependsOn(this.InstallGoGitSemver)
+        .DependsOn(this.InstallGoGitSemver, this.SetGitRemoteUrl)
         .Requires(() => EnumExtension.IsEnumValid<Versioning.Semantic>(this.BUMP_SEMANTIC))
         .Requires(() => EnumExtension.IsEnumValid<Versioning.Stability>(this.BUMP_STABILITY))
         .Requires(() => GitTasks.GitHasCleanWorkingCopy())
