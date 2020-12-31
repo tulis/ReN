@@ -129,11 +129,15 @@ class Build : NukeBuild
     Target SetGitRemoteUrl => _ => _
         .Executes(() =>
         {
+            GitTasks.Git(arguments: $"remote"
+                , logInvocation: true
+                , logOutput: true);
+
             GitTasks.Git(arguments: $"remote remove origin"
                 , logInvocation: true
                 , logOutput: true);
 
-            GitTasks.Git(arguments: $"remote set-url --push origin {this.GitHubRemoteUrl}"
+            GitTasks.Git(arguments: $"remote set-url origin {this.GitHubRemoteUrl}"
                 , logInvocation: true
                 , logOutput: true);
         });
@@ -168,7 +172,7 @@ class Build : NukeBuild
                 , logInvocation: true
                 , logOutput: true);
 
-            GitTasks.Git(arguments: $"push '{this.GitHubRemoteUrl}' {nextVersion}"
+            GitTasks.Git(arguments: $"push origin {nextVersion}"
                 , logInvocation: true
                 , logOutput: true);
         });
