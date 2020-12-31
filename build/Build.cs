@@ -96,8 +96,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             ProcessTasks.StartProcess(toolPath: "go"
-                , arguments: $"get github.com/kyoh86/git-vertag"
-                //, logInvocation: false
+                , arguments: $"get -v github.com/kyoh86/git-vertag"
                 , logOutput: true);
         });
 
