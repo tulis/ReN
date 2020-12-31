@@ -159,8 +159,8 @@ class Build : NukeBuild
                 , (GitVerTag.Minor, false) => $"minor --pre alpha --prefix ''{gitVerTagMessage}"
                 , (GitVerTag.Patch, false) => $"patch --pre alpha --prefix ''{gitVerTagMessage}"
 
-                , (GitVerTag.Alpha, _) => $"--pre alpha --prefix ''{gitVerTagMessage}"
-                , (GitVerTag.Beta, _) => $"--pre beta --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Alpha, _) => $"pre alpha --prefix ''{gitVerTagMessage}"
+                , (GitVerTag.Beta, _) => $"pre beta --prefix ''{gitVerTagMessage}"
                 , (GitVerTag.Release, _) => $"release --prefix ''{gitVerTagMessage}"
 
                 , _ => throw new ArgumentOutOfRangeException(
