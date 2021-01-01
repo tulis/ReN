@@ -101,8 +101,17 @@ class Build : NukeBuild
     string NuGetPackageSource => "https://api.nuget.org/v3/index.json";
     IReadOnlyCollection<AbsolutePath> PackageFiles => this.PackageDirectory.GlobFiles("*.nupkg");
 
+    Target SetGoPath => _ => _
+        .Executes(() =>
+        {
+            Environment.SetEnvironmentVariable(nameof(this.GOPATH), "/home/runner/go");
+
+            Console.WriteLine($"→ {nameof(this.GOPATH)}={Environment.GetEnvironmentVariable(nameof(this.GOPATH))}");
+        });
+
     // https://github.com/linyows/git-semv
     Target InstallGoGitSemver => _ => _
+        .DependsOn(this.SetGoPath)
         .Executes(() =>
         {
             Logger.Info($"{nameof(this.GOPATH)}={this.ExpandedGoPath}");
