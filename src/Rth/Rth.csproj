@@ -8,7 +8,6 @@
         <RepositoryUrl>https://github.com/tulis/Rth</RepositoryUrl>
         <PackageTags>dataflow, data-flow, rop, railway-oriented-programming</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Copyright>© tsur 2020</Copyright>
         <Description>Rth (Result then) inspired by Scott Wlaschin's talk on Railway Oriented Programming.</Description>
     </PropertyGroup>
 

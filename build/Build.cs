@@ -93,6 +93,7 @@ class Build : NukeBuild
 
     Nuke.Common.ProjectModel.Project RthProject => Solution.GetProject("Rth");
 
+    string Copyright => $"© tsur {DateTime.UtcNow.Year}";
     string ExpandedGoPath => EnvironmentInfo.ExpandVariables($"${nameof(this.GOPATH)}");
     string GoGitSemvToolPath => $"{this.ExpandedGoPath}/bin/git-semv";
     string GitHubPackageSource => $"https://nuget.pkg.github.com/{GitHubActions.GitHubRepositoryOwner}/index.json";
@@ -218,6 +219,7 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetAssemblyVersion(this.GitVersionLazy.Value.AssemblySemVer)
+                .SetCopyright(this.Copyright)
                 .SetFileVersion(this.GitVersionLazy.Value.AssemblySemFileVer)
                 .SetInformationalVersion(this.GitVersionLazy.Value.InformationalVersion)
                 .EnableNoRestore()
@@ -238,6 +240,7 @@ class Build : NukeBuild
                     .SetConfiguration(Configuration)
                     .SetRepositoryUrl(GitRepository.HttpsUrl)
                     .SetAssemblyVersion(GitVersionLazy.Value.AssemblySemVer)
+                    .SetCopyright(this.Copyright)
                     .SetFileVersion(GitVersionLazy.Value.AssemblySemFileVer)
                     .SetInformationalVersion(GitVersionLazy.Value.InformationalVersion)
                     .CombineWith(publishConfigurations, (_, v) => _
